@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 contract Governance {
   //Variables
   mapping(uint256 => vote) private votes;
-  mapping(address => bool) whitelist;
+  mapping(address => bool) whitelistAddress;
   mapping(address => voter) public voterRegister;
   mapping(address => uint256) public blocked;
 
@@ -53,9 +53,21 @@ contract Governance {
     _;
   }
 
+  modifier isWhitelisted(address _address) {
+    require(whitelistAddress[_address], "You need to be whitelisted");
+    _;
+  }
+
   //Events
 
   //Function
+
+  function setwhitelist(address[] calldata addresses) external onlyOwner {
+    for (uint256 i = 0; i < addresses.length; i++) {
+      whitelistAddress[addresses[i]] = true;
+    }
+  }
+
   function changeStartTimestamp(uint256 _startTimestamp) public onlyOwner {
     startTimestamp = _startTimestamp;
   }
