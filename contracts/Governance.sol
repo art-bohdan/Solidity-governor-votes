@@ -3,19 +3,13 @@ pragma solidity ^0.8.0;
 
 contract Governance {
   //Variables
-  mapping(uint256 => vote) private votes;
   mapping(address => bool) whitelistAddress;
   mapping(address => voter) public voterRegister;
-  mapping(address => uint256) public blocked;
-
-  struct vote {
-    address voterAddress;
-    VoteType choice;
-  }
 
   struct voter {
     address voterAddress;
     bool voted;
+    VoteType choice;
   }
 
   enum VoteType {
@@ -62,7 +56,7 @@ contract Governance {
 
   //Function
 
-  function setwhitelist(address[] calldata addresses) external onlyOwner {
+  function setWhitelist(address[] calldata addresses) external onlyOwner {
     for (uint256 i = 0; i < addresses.length; i++) {
       whitelistAddress[addresses[i]] = true;
     }
