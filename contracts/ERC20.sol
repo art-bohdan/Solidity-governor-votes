@@ -7,7 +7,7 @@ contract ERC20 is IERC20 {
   uint256 public _totalSupply;
 
   mapping(address => uint256) public _balanceOf;
-  mapping(address => mapping(address => uint256)) public allowance;
+  mapping(address => mapping(address => uint256)) public _allowance;
 
   string public _name;
   string public _symbol;
@@ -47,14 +47,14 @@ contract ERC20 is IERC20 {
 
   function increaseAllowance(address spender, uint256 addedValue) public payable returns (bool) {
     require(spender != address(0), "ERC20: spender should be not a zero address");
-    allowance[msg.sender][spender] += addedValue;
+    _allowance[msg.sender][spender] += addedValue;
     emit Approval(msg.sender, spender, addedValue);
     return true;
   }
 
   function decreaseAllowance(address spender, uint256 addedValue) public payable returns (bool) {
     require(spender != address(0), "ERC20: spender should be not a zero address");
-    allowance[msg.sender][spender] -= addedValue;
+    _allowance[msg.sender][spender] -= addedValue;
     emit Approval(msg.sender, spender, addedValue);
     return true;
   }
@@ -63,8 +63,8 @@ contract ERC20 is IERC20 {
     return _totalSupply;
   }
 
-  function _allowance(address owner, address spender) external view returns (uint256) {
-    return allowance[owner][spender];
+  function allowance(address owner, address spender) external view override returns (uint256) {
+    return _allowance[owner][spender];
   }
 
   function transfer(address to, uint256 amount) external override returns (bool) {
@@ -77,7 +77,7 @@ contract ERC20 is IERC20 {
 
   function approve(address spender, uint256 amount) external override returns (bool) {
     require(spender != address(0), "ERC20: approve to the zero address");
-    allowance[msg.sender][spender] = amount;
+    _allowance[msg.sender][spender] = amount;
     emit Approval(msg.sender, spender, amount);
     return true;
   }
@@ -88,8 +88,8 @@ contract ERC20 is IERC20 {
     uint256 amount
   ) external override returns (bool) {
     require(_balanceOf[from] >= amount, "ERC20: not enough funds on account");
-    require(allowance[from][msg.sender] >= amount, "ERC20: not enough allowance funds on account");
-    allowance[from][msg.sender] -= amount;
+    require(_allowance[from][msg.sender] >= amount, "ERC20: not enough allowance funds on account");
+    _allowance[from][msg.sender] -= amount;
     _balanceOf[from] -= amount;
     _balanceOf[to] += amount;
     emit Transfer(from, msg.sender, amount);
@@ -98,8 +98,8 @@ contract ERC20 is IERC20 {
 
   function burnFrom(address from, uint256 amount) external returns (bool) {
     require(_balanceOf[from] >= amount, "ERC20: not enough funds on account");
-    require(allowance[from][msg.sender] >= amount, "ERC20: not enough allowance funds");
-    allowance[from][msg.sender] -= amount;
+    require(_allowance[from][msg.sender] >= amount, "ERC20: not enough allowance funds");
+    _allowance[from][msg.sender] -= amount;
     _balanceOf[from] -= amount;
     _totalSupply -= amount;
     emit Transfer(from, address(0), amount);
