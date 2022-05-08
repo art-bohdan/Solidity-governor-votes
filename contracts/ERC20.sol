@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ERC20 is IERC20 {
+  //Variables
   uint256 public _totalSupply;
 
   mapping(address => uint256) public _balanceOf;
@@ -24,6 +25,7 @@ contract ERC20 is IERC20 {
     _mint(totalSupply_);
   }
 
+//Function
   function name() public view returns (string memory) {
     return _name;
   }
@@ -71,7 +73,25 @@ contract ERC20 is IERC20 {
     return true;
   }
 
-  // returns total supply
+//   function _beforeTokenTransfer(
+//     address operator, 
+//     address from, 
+//     address to, 
+//     uint256 amount
+// ) 
+//     internal 
+//     override 
+//     virtual 
+// {
+//     if (from != Utils.EMPTY_ADDRESS) {
+//         updateAccountHistory(from, balanceOf(from).sub(amount));
+//     }
+//     if (to != Utils.EMPTY_ADDRESS) {
+//         updateAccountHistory(to, balanceOf(to).add(amount));
+//     }
+//     super._beforeTokenTransfer(operator, from, to, amount);
+// }
+
   function totalSupply() public view override returns (uint256) {
     return _totalSupply;
   }

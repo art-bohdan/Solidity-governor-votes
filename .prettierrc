@@ -3,5 +3,6 @@
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "none",
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "printWidth": 120
 }
