@@ -37,9 +37,9 @@ contract Governance {
   constructor(
     string memory _governanceName,
     string memory _proposal,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
-    uint256 _minVotes,
+    uint64 _startTimestamp,
+    uint64 _endTimestamp,
+    uint8 _minVotes,
     address[] memory addresses
   ) {
     governanceAddress = msg.sender;
@@ -65,7 +65,6 @@ contract Governance {
   // event VotingExecuted(uint256 indexed votingId, VotingResult result);
 
   //Function
-  receive() external payable {}
 
   function getGovernanceName() public view returns (string memory) {
     return governanceName;
@@ -75,11 +74,11 @@ contract Governance {
     return proposal;
   }
 
-  function getStartTimestamp(uint256 votingId) public view returns (uint256) {
+  function getStartTimestamp() public view returns (uint256) {
     return votingDetails.createdVote;
   }
 
-  function getEndTimestamp(uint256 votingId) public view returns (uint256) {
+  function getEndTimestamp() public view returns (uint256) {
     return votingDetails.endVote;
   }
 
