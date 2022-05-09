@@ -1,16 +1,19 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 import "./ERC20.sol";
+import "./IERC20.sol";
 
 contract Governance {
   //Variables
   mapping(address => bool) whitelistAddress;
-  mapping(uint256 => VotingDetails) public voterRegister;
+  mapping(uint256 => VotingDetails) public votings;
+  uint256 votingIdsCounter;
 
   struct VotingDetails {
-    uint256 myTokenTotalSupplySnapshot;
-    uint256 createdAt;
-    uint256 duration;
+    uint256 myTokenTotalSupply;
+    uint256 createdVote;
+    uint256 endVote;
+    uint minVotes;
     uint256 totalForVotes;
     uint256 totalAgainstVotes;
     uint256 totalAbstainVotes;
@@ -31,10 +34,6 @@ contract Governance {
     NOT_APPLIED
   }
 
-  uint256 public startTimestamp;
-  uint256 public endTimestamp;
-
-  uint256 public minVotes;
   address public governanceAddress;
   string public governanceName;
   string public proposal;
@@ -50,15 +49,12 @@ contract Governance {
     governanceAddress = msg.sender;
     governanceName = _governanceName;
     proposal = _proposal;
-    startTimestamp = _startTimestamp;
-    endTimestamp = _endTimestamp;
-    minVotes = _minVotes;
     setWhitelist(addresses);
   }
 
   //Modifire
   modifier onlyOwner() {
-    require(msg.sender == governanceAddress);
+    require(msg.sender == governanceAddress, "must be address onwer");
     _;
   }
 
@@ -78,8 +74,19 @@ contract Governance {
   function getGovernanceName() public view returns (string memory) {
     return governanceName;
   }
+  function getProposal() public view returns (string memory) {
+    return proposal;
+  }
+  
+  function getStartTimestamp(uint votingId) public view returns (uint256) {
+    return votings[votingId].createdVote;
+  }
 
-  function setWhitelist(address[] memory addresses) internal onlyOwner {
+  function getEndTimestamp(uint votingId) public view returns (uint256) {
+    return votings[votingId].endVote;
+  }
+
+  function setWhitelist(address[] memory addresses) public onlyOwner {
     for (uint256 i = 0; i < addresses.length; i++) {
       whitelistAddress[addresses[i]] = true;
     }
@@ -89,21 +96,42 @@ contract Governance {
     return whitelistAddress[_address];
   }
 
-  function changeStartTimestamp(uint256 _startTimestamp) external onlyOwner {
-    startTimestamp = _startTimestamp;
+  function changeStartTimestamp(uint256 _createdVote, uint votingId) external onlyOwner {
+     votings[votingId].createdVote = _createdVote;
   }
 
-  function changeEndTimestamp(uint256 _endTimestamp) external onlyOwner {
-    require(_endTimestamp > startTimestamp, "End timestamp must be longer from the begin");
-    endTimestamp = _endTimestamp;
+  function changeEndTimestamp(uint256 _endVote, uint votingId) external onlyOwner {
+    require(_endVote > votings[votingId].createdVote, "End timestamp must be longer from the begin");
+    votings[votingId].endVote = _endVote;
   }
+
+  function startVoting(uint256 createdVote, uint256 endVote, uint minVotes) external {
+        // checking inputs
+        require(IERC20(governanceAddress).balanceOf(msg.sender) > 0, "You should possess at least some tokens to be able to start a voting");
+
+        // creating new voting
+        uint256 votingId = votingIdsCounter++;
+        uint256 myTokenTotalSupply =IERC20(governanceAddress).totalSupply();
+        // votings[votingId] = VotingDetails(
+        //     myTokenTotalSupply,
+        //     createdVote,
+        //     endVote,
+        //     minVotes,
+        //     0,
+        //     0,
+        //     0,
+        //     false
+        // );
+
+        emit VotingStarted(votingId);
+    }
 
   function vote(uint256 votingId, VoteStatus status) external isWhitelisted(msg.sender) {
-    VotingDetails storage votingDetails = voterRegister[votingId];
+    VotingDetails storage votingDetails = votings[votingId];
     // checking inputs
-    require(votingDetails.createdAt > 0, "The voting does not exist");
+    require(votingDetails.createdVote > 0, "The voting does not exist");
     require(status != VoteStatus.Abstain, "Invalid vote");
-    require(votingDetails.createdAt != block.timestamp, "Unable to vote right after the voting's start");
+    require(votingDetails.createdVote != block.timestamp, "Unable to vote right after the voting's start");
     require(votingDetails.voteByAccount[msg.sender] == VoteStatus.Abstain, "The voter already voted");
     uint256 accountWeight = ERC20(governanceAddress).balanceOf(msg.sender);
 
@@ -119,7 +147,7 @@ contract Governance {
   }
 
   function getVoteOf(uint256 votingId, address voter) external view returns (VoteStatus) {
-    VotingDetails storage votingDetails = voterRegister[votingId];
+    VotingDetails storage votingDetails = votings[votingId];
 
     return votingDetails.voteByAccount[voter];
   }
@@ -136,7 +164,7 @@ contract Governance {
       bool executed
     )
   {
-    VotingDetails storage votingDetails = voterRegister[votingId];
+    VotingDetails storage votingDetails = votings[votingId];
 
     return (
       votingDetails.createdAt,

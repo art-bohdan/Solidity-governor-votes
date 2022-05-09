@@ -3,7 +3,7 @@ import { ethers } from 'hardhat'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { ERC20 } from '../typechain'
 
-interface TokenContext {
+export interface TokenContext {
   token: ERC20
   deployer: SignerWithAddress
   user1: SignerWithAddress
@@ -169,6 +169,43 @@ describe('Token', function () {
       await ctx.token.connect(ctx.user1).approve(ctx.deployer.address, amount)
       await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
 
+      await ctx.token.transfer(ctx.user1.address, amount)
+
+      await ctx.token.transferFrom(ctx.user1.address, ctx.user2.address, amount)
+
+      const balanceUser2 = await ctx.token.balanceOf(ctx.user2.address)
+
+      expect(balanceUser2).to.equal(amount)
+    })
+  })
+
+  describe('increase and decrease allowance', () => {
+    it('Should be double increase allowance', async () => {
+      const amount = 50
+      await ctx.token.connect(ctx.user1).increaseAllowance(ctx.deployer.address, amount)
+      const checkFirstAddAllowance = await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
+      expect(checkFirstAddAllowance).to.eq(amount)
+      await ctx.token.connect(ctx.user1).increaseAllowance(ctx.deployer.address, amount)
+      const checkSecondAddAllowance = await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
+      expect(checkSecondAddAllowance).to.eq(amount * 2)
+      await ctx.token.transfer(ctx.user1.address, amount)
+
+      await ctx.token.transferFrom(ctx.user1.address, ctx.user2.address, amount)
+
+      const balanceUser2 = await ctx.token.balanceOf(ctx.user2.address)
+
+      expect(balanceUser2).to.equal(amount)
+    })
+    it('Should be double increase allowance, and one decrease', async () => {
+      const amount = 50
+      await ctx.token.connect(ctx.user1).increaseAllowance(ctx.deployer.address, amount)
+      await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
+      await ctx.token.connect(ctx.user1).increaseAllowance(ctx.deployer.address, amount)
+      await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
+
+      await ctx.token.connect(ctx.user1).decreaseAllowance(ctx.deployer.address, amount)
+      const checkAllowance = await ctx.token.allowance(ctx.user1.address, ctx.deployer.address)
+      expect(checkAllowance).to.eq(amount * 2 - amount)
       await ctx.token.transfer(ctx.user1.address, amount)
 
       await ctx.token.transferFrom(ctx.user1.address, ctx.user2.address, amount)
