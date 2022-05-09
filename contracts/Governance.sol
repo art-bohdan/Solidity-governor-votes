@@ -18,8 +18,9 @@ contract Governance {
     uint256 totalAgainstVotes;
     uint256 totalAbstainVotes;
     bool executed;
-    mapping(address => VoteStatus) voteByAccount;
+    VoteStatus voteStatus;
   }
+    // mapping(address => VoteStatus) voteByAccount;
 
   enum VoteStatus {
     For,
