@@ -82,28 +82,28 @@ describe("Governance", () => {
       await ctx.token.transfer(ctx.user2.address, amount)
       expect(await ctx.token.balanceOf(ctx.user2.address)).to.eq(amount)
       await governanceCtx.governance.connect(ctx.user1).setWhitelist([ctx.user2.address])
-      await governanceCtx.governance.connect(ctx.user2).vote(0)
-      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(0)
+      await governanceCtx.governance.connect(ctx.user2).vote(1)
+      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(1)
     })
     it("Shoud not set vote, reverted vote voter alredy voted", async () => {
       const amount = 50
       await ctx.token.transfer(ctx.user2.address, amount)
       expect(await ctx.token.balanceOf(ctx.user2.address)).to.eq(amount)
       await governanceCtx.governance.setWhitelist([ctx.user2.address])
-      await governanceCtx.governance.connect(ctx.user2).vote(0)
-      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(0)
-      await expect(governanceCtx.governance.connect(ctx.user2).vote(1)).to.be.revertedWith("The voter already voted")
+      await governanceCtx.governance.connect(ctx.user2).vote(1)
+      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(1)
+      await expect(governanceCtx.governance.connect(ctx.user2).vote(2)).to.be.revertedWith("The voter already voted")
     })
     it("Shoud not set vote, reverted vote voter alredy voted", async () => {
       await governanceCtx.governance.setWhitelist([ctx.user2.address])
-      await expect(governanceCtx.governance.connect(ctx.user2).vote(0)).to.be.revertedWith("Not enought funds")
+      await expect(governanceCtx.governance.connect(ctx.user2).vote(1)).to.be.revertedWith("Not enought funds")
     })
     it("Shoud not set votes, get votes information", async () => {
       for (let i = 0; i < ctx.users.length; i++) {
         const amount = 50
         await ctx.token.transfer(ctx.users[i].address, amount)
         expect(await ctx.token.balanceOf(ctx.users[i].address)).to.eq(amount)
-        await governanceCtx.governance.connect(ctx.users[i]).vote(1)
+        await governanceCtx.governance.connect(ctx.users[i]).vote(2)
       }
       expect(await (await governanceCtx.governance.connect(ctx.user1).getVoting()).totalAgainstVotes).to.eq(
         ctx.users.length

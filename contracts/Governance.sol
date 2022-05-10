@@ -25,6 +25,7 @@ contract Governance {
   }
 
   enum VoteStatus {
+    None,
     For,
     Against,
     Abstain
@@ -66,7 +67,6 @@ contract Governance {
   event VotePlaced(address voter, VoteStatus status, uint256 voteWeight);
 
   //Function
-
   function getProposal() public view returns (string memory) {
     return proposal;
   }
@@ -82,7 +82,7 @@ contract Governance {
   function setWhitelist(address[] memory addresses) public onlyOwner {
     for (uint256 i = 0; i < addresses.length; i++) {
       if (votings[addresses[i]].inWhitelist == true) continue;
-      votings[addresses[i]].inWhitelist = true;
+      votings[addresses[i]] = UserWhitelist(0, true, false, VoteStatus.None);
     }
   }
 

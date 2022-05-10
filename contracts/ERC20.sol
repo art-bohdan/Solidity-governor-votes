@@ -41,7 +41,7 @@ contract ERC20 is IERC20 {
   }
 
   // returns balances from account address
-  function balanceOf(address account) public view returns (uint64) {
+  function balanceOf(address account) public override view returns (uint64) {
     return _balanceOf[account];
   }
 
@@ -59,7 +59,7 @@ contract ERC20 is IERC20 {
     return true;
   }
 
-  function totalSupply() public view returns (uint64) {
+  function totalSupply() public view override returns (uint64) {
     return _totalSupply;
   }
 
@@ -67,7 +67,7 @@ contract ERC20 is IERC20 {
     return _allowance[owner][spender];
   }
 
-  function transfer(address to, uint64 amount) external returns (bool) {
+  function transfer(address to, uint64 amount) external override returns (bool) {
     require(_balanceOf[msg.sender] >= amount, "ERC20: transfer amount exceeds balance");
     _balanceOf[msg.sender] -= amount;
     _balanceOf[to] += amount;
@@ -75,7 +75,7 @@ contract ERC20 is IERC20 {
     return true;
   }
 
-  function approve(address spender, uint64 amount) external returns (bool) {
+  function approve(address spender, uint64 amount) external override returns (bool) {
     require(spender != address(0), "ERC20: approve to the zero address");
     _allowance[msg.sender][spender] = amount;
     emit Approval(msg.sender, spender, amount);
@@ -86,7 +86,7 @@ contract ERC20 is IERC20 {
     address from,
     address to,
     uint64 amount
-  ) external returns (bool) {
+  ) external override returns (bool) {
     require(_balanceOf[from] >= amount, "ERC20: not enough funds on account");
     require(_allowance[from][msg.sender] >= amount, "ERC20: not enough allowance funds on account");
     _allowance[from][msg.sender] -= amount;
