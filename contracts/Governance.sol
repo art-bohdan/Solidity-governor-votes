@@ -30,13 +30,11 @@ contract Governance {
     Abstain
   }
 
-  address private tokenAddress;
-  address public governanceAddress;
-  string public governanceName;
+  address private immutable tokenAddress;
+  address public immutable governanceAddress;
   string public proposal;
 
   constructor(
-    string memory _governanceName,
     string memory _proposal,
     uint64 _createdVote,
     uint64 _endVote,
@@ -45,7 +43,6 @@ contract Governance {
     address[] memory addresses
   ) {
     governanceAddress = msg.sender;
-    governanceName = _governanceName;
     votingDetails.createdVote = _createdVote;
     votingDetails.endVote = _endVote;
     votingDetails.minVotes = _minVotes;
@@ -69,9 +66,6 @@ contract Governance {
   event VotePlaced(address voter, VoteStatus status, uint256 voteWeight);
 
   //Function
-  function getGovernanceName() public view returns (string memory) {
-    return governanceName;
-  }
 
   function getProposal() public view returns (string memory) {
     return proposal;
@@ -87,7 +81,7 @@ contract Governance {
 
   function setWhitelist(address[] memory addresses) public onlyOwner {
     for (uint256 i = 0; i < addresses.length; i++) {
-      if(votings[addresses[i]].inWhitelist == true) continue;
+      if (votings[addresses[i]].inWhitelist == true) continue;
       votings[addresses[i]].inWhitelist = true;
     }
   }
@@ -107,12 +101,10 @@ contract Governance {
   }
 
   function vote(VoteStatus status) external isWhitelisted {
-    require(votings[msg.sender].executed != true, "The voter already voted");
+    require(!votings[msg.sender].executed, "The voter already voted");
     require(ERC20(tokenAddress).balanceOf(msg.sender) > 0, "Not enought funds");
     uint256 accountWeight = ERC20(tokenAddress).balanceOf(msg.sender);
-    votings[msg.sender].status = status;
-    votings[msg.sender].executed = true;
-    votings[msg.sender].tokenTotalSupply = accountWeight;
+    votings[msg.sender] = UserWhitelist(accountWeight, true, true, status);
 
     if (status == VoteStatus.For) {
       votingDetails.totalForVotes++;
@@ -123,9 +115,9 @@ contract Governance {
     emit VotePlaced(msg.sender, status, accountWeight);
   }
 
-  function getVoteOf(address voter) external view isWhitelisted returns (VoteStatus) {
-    return votings[voter].status;
-  }
+  // function getVoteOf(address voter) external view isWhitelisted returns (VoteStatus) {
+  //   return votings[voter].status;
+  // }
 
   function getVoting() external view returns (VotingDetails memory) {
     return votingDetails;
