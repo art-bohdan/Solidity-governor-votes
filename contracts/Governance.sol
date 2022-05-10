@@ -102,6 +102,7 @@ contract Governance {
 
   function vote(VoteStatus status) external isWhitelisted {
     require(!votings[msg.sender].executed, "The voter already voted");
+    require(votings[msg.sender].status == VoteStatus.None, "The voter not yet voted");
     require(ERC20(tokenAddress).balanceOf(msg.sender) > 0, "Not enought funds");
     uint256 accountWeight = ERC20(tokenAddress).balanceOf(msg.sender);
     votings[msg.sender] = UserWhitelist(accountWeight, true, true, status);
