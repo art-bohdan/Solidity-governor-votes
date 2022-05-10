@@ -8,23 +8,23 @@ interface IERC20 {
 
   function decimals() external view returns (uint256);
 
-  function totalSupply() external view returns (uint256);
+  function totalSupply() external view returns (uint64);
 
-  function balanceOf(address account) external view returns (uint256);
+  function balanceOf(address account) external view returns (uint64);
 
-  function transfer(address recipient, uint256 amount) external returns (bool);
+  function transfer(address recipient, uint64 amount) external returns (bool);
 
-  function allowance(address owner, address spender) external view returns (uint256);
+  function allowance(address owner, address spender) external view returns (uint64);
 
-  function approve(address spender, uint256 amount) external returns (bool);
+  function approve(address spender, uint64 amount) external returns (bool);
 
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint64 amount
   ) external returns (bool);
 
-  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Transfer(address indexed from, address indexed to, uint64 value);
 
-  event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint64 value);
 }

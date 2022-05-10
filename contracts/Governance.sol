@@ -42,8 +42,8 @@ contract Governance {
     address _tokenAddress,
     address[] memory addresses
   ) {
-    governanceAddress = msg.sender;
     proposal = _proposal;
+    governanceAddress = msg.sender;
     votingDetails.createdVote = _createdVote;
     votingDetails.endVote = _endVote;
     votingDetails.minVotes = _minVotes;
