@@ -18,10 +18,10 @@ contract Governance {
   struct VotingDetails {
     uint64 createdVote;
     uint64 endVote;
-    uint16 minVotes;
-    uint256 totalForVotes;
-    uint256 totalAgainstVotes;
-    uint256 totalAbstainVotes;
+    uint32 minVotes;
+    uint32 totalForVotes;
+    uint32 totalAgainstVotes;
+    uint32 totalAbstainVotes;
   }
 
   enum VoteStatus {
@@ -31,7 +31,7 @@ contract Governance {
   }
 
   address private immutable tokenAddress;
-  address public immutable governanceAddress;
+  address public governanceAddress;
   string public proposal;
 
   constructor(
@@ -43,10 +43,10 @@ contract Governance {
     address[] memory addresses
   ) {
     governanceAddress = msg.sender;
+    proposal = _proposal;
     votingDetails.createdVote = _createdVote;
     votingDetails.endVote = _endVote;
     votingDetails.minVotes = _minVotes;
-    proposal = _proposal;
     tokenAddress = _tokenAddress;
     setWhitelist(addresses);
   }
@@ -114,10 +114,6 @@ contract Governance {
 
     emit VotePlaced(msg.sender, status, accountWeight);
   }
-
-  // function getVoteOf(address voter) external view isWhitelisted returns (VoteStatus) {
-  //   return votings[voter].status;
-  // }
 
   function getVoting() external view returns (VotingDetails memory) {
     return votingDetails;

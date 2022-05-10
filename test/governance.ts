@@ -17,7 +17,6 @@ describe("Governance", () => {
     const token = await Token.deploy("Token-T", "TT", 18, 2000)
     const whitelistUsers = users.map((user) => user.address)
     const governance = await Governance.connect(user1).deploy(
-      "Vote",
       "Give grant to team",
       1652371906,
       1652631106,
@@ -31,9 +30,6 @@ describe("Governance", () => {
   })
 
   describe("Deployment", () => {
-    it("Should return governance name", async () => {
-      expect(await governanceCtx.governance.getGovernanceName()).to.eq("Vote")
-    })
     it("Should return proposal", async () => {
       expect(await governanceCtx.governance.getProposal()).to.eq("Give grant to team")
     })
@@ -57,8 +53,8 @@ describe("Governance", () => {
       await governanceCtx.governance.changeEndTimestamp(newEndData)
       expect(await governanceCtx.governance.getEndTimestamp()).to.eq(newEndData)
     })
-    // eslint-disable-next-line quotes
-    it(`Should can't be change end timestamp`, async () => {
+
+    it("Should can't be change end timestamp", async () => {
       const newStartData = 1652370905
       await expect(governanceCtx.governance.connect(ctx.user2).changeEndTimestamp(newStartData)).to.be.revertedWith(
         "Sender address must be onwer"
@@ -85,9 +81,9 @@ describe("Governance", () => {
       const amount = 50
       await ctx.token.transfer(ctx.user2.address, amount)
       expect(await ctx.token.balanceOf(ctx.user2.address)).to.eq(amount)
-      await governanceCtx.governance.setWhitelist([ctx.user2.address])
+      await governanceCtx.governance.connect(ctx.user1).setWhitelist([ctx.user2.address])
       await governanceCtx.governance.connect(ctx.user2).vote(0)
-      expect(await governanceCtx.governance.connect(ctx.user2).getVoteOf(ctx.user2.address)).to.be.eq(0)
+      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(0)
     })
     it("Shoud not set vote, reverted vote voter alredy voted", async () => {
       const amount = 50
@@ -95,12 +91,23 @@ describe("Governance", () => {
       expect(await ctx.token.balanceOf(ctx.user2.address)).to.eq(amount)
       await governanceCtx.governance.setWhitelist([ctx.user2.address])
       await governanceCtx.governance.connect(ctx.user2).vote(0)
-      expect(await governanceCtx.governance.connect(ctx.user2).getVoteOf(ctx.user2.address)).to.be.eq(0)
+      expect((await governanceCtx.governance.connect(ctx.user2).votings(ctx.user2.address)).status).to.eq(0)
       await expect(governanceCtx.governance.connect(ctx.user2).vote(1)).to.be.revertedWith("The voter already voted")
     })
     it("Shoud not set vote, reverted vote voter alredy voted", async () => {
       await governanceCtx.governance.setWhitelist([ctx.user2.address])
       await expect(governanceCtx.governance.connect(ctx.user2).vote(0)).to.be.revertedWith("Not enought funds")
+    })
+    it("Shoud not set votes, get votes information", async () => {
+      for (let i = 0; i < ctx.users.length; i++) {
+        const amount = 50
+        await ctx.token.transfer(ctx.users[i].address, amount)
+        expect(await ctx.token.balanceOf(ctx.users[i].address)).to.eq(amount)
+        await governanceCtx.governance.connect(ctx.users[i]).vote(1)
+      }
+      expect(await (await governanceCtx.governance.connect(ctx.user1).getVoting()).totalAgainstVotes).to.eq(
+        ctx.users.length
+      )
     })
   })
 })
