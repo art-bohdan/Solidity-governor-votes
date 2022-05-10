@@ -5,23 +5,24 @@ module.exports = {
     mocha: true,
     node: true
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ["@typescript-eslint"],
   extends: [
-    'standard',
-    'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended'
+    "standard",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 12
   },
   rules: {
-    'node/no-unsupported-features/es-syntax': 'off',
-    'node/no-unpublished-import': 'off',
-    'node/no-missing-import': 'off',
-    camelcase: 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    'space-before-function-paren': 'off'
+    quotes: [2, "double"],
+    "node/no-unsupported-features/es-syntax": "off",
+    "node/no-unpublished-import": "off",
+    "node/no-missing-import": "off",
+    camelcase: "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "space-before-function-paren": "off"
   }
 }

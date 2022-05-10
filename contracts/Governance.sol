@@ -5,23 +5,23 @@ import "./IERC20.sol";
 
 contract Governance {
   //Variables
-  mapping(address => UserWhitelist) whitelistAddress;
-  mapping(address => VoteStatus) public votings;
-  VotingDetails votingDetails;
+  mapping(address => UserWhitelist) public votings;
+  VotingDetails internal votingDetails;
 
   struct UserWhitelist {
+    uint256 tokenTotalSupply;
     bool inWhitelist;
     bool executed;
+    VoteStatus status;
   }
 
   struct VotingDetails {
-    uint64 myTokenTotalSupply;
     uint64 createdVote;
     uint64 endVote;
-    uint8 minVotes;
-    uint8 totalForVotes;
-    uint8 totalAgainstVotes;
-    uint8 totalAbstainVotes;
+    uint16 minVotes;
+    uint256 totalForVotes;
+    uint256 totalAgainstVotes;
+    uint256 totalAbstainVotes;
   }
 
   enum VoteStatus {
@@ -30,6 +30,7 @@ contract Governance {
     Abstain
   }
 
+  address private tokenAddress;
   address public governanceAddress;
   string public governanceName;
   string public proposal;
@@ -37,35 +38,37 @@ contract Governance {
   constructor(
     string memory _governanceName,
     string memory _proposal,
-    uint64 _startTimestamp,
-    uint64 _endTimestamp,
+    uint64 _createdVote,
+    uint64 _endVote,
     uint8 _minVotes,
+    address _tokenAddress,
     address[] memory addresses
   ) {
     governanceAddress = msg.sender;
     governanceName = _governanceName;
+    votingDetails.createdVote = _createdVote;
+    votingDetails.endVote = _endVote;
+    votingDetails.minVotes = _minVotes;
     proposal = _proposal;
+    tokenAddress = _tokenAddress;
     setWhitelist(addresses);
   }
 
   //Modifire
   modifier onlyOwner() {
-    require(msg.sender == governanceAddress, "must be address onwer");
+    require(msg.sender == governanceAddress, "Sender address must be onwer");
     _;
   }
 
   modifier isWhitelisted() {
-    require(whitelistAddress[msg.sender].inWhitelist == true, "You need to be whitelisted");
+    require(votings[msg.sender].inWhitelist == true, "You need to be whitelisted");
     _;
   }
 
   //Events
   event VotePlaced(address voter, VoteStatus status, uint256 voteWeight);
 
-  // event VotingExecuted(uint256 indexed votingId, VotingResult result);
-
   //Function
-
   function getGovernanceName() public view returns (string memory) {
     return governanceName;
   }
@@ -84,16 +87,17 @@ contract Governance {
 
   function setWhitelist(address[] memory addresses) public onlyOwner {
     for (uint256 i = 0; i < addresses.length; i++) {
-      whitelistAddress[addresses[i]].inWhitelist = true;
+      if(votings[addresses[i]].inWhitelist == true) continue;
+      votings[addresses[i]].inWhitelist = true;
     }
   }
 
   function checkAddressWhitelist(address _address) external view returns (bool) {
-    return whitelistAddress[_address].inWhitelist;
+    return votings[_address].inWhitelist;
   }
 
   function changeStartTimestamp(uint64 _createdVote) external onlyOwner {
-    require(votingDetails.endVote < _createdVote, "Start timestamp must be less from the end");
+    require(votingDetails.endVote > _createdVote, "Start timestamp must be less from the end");
     votingDetails.createdVote = _createdVote;
   }
 
@@ -103,9 +107,12 @@ contract Governance {
   }
 
   function vote(VoteStatus status) external isWhitelisted {
-    require(whitelistAddress[msg.sender].executed == true, "The voter already voted");
-    uint256 accountWeight = ERC20(governanceAddress).balanceOf(msg.sender);
-    votings[msg.sender] = status;
+    require(votings[msg.sender].executed != true, "The voter already voted");
+    require(ERC20(tokenAddress).balanceOf(msg.sender) > 0, "Not enought funds");
+    uint256 accountWeight = ERC20(tokenAddress).balanceOf(msg.sender);
+    votings[msg.sender].status = status;
+    votings[msg.sender].executed = true;
+    votings[msg.sender].tokenTotalSupply = accountWeight;
 
     if (status == VoteStatus.For) {
       votingDetails.totalForVotes++;
@@ -116,8 +123,8 @@ contract Governance {
     emit VotePlaced(msg.sender, status, accountWeight);
   }
 
-  function getVoteOf(address voter) external view returns (VoteStatus) {
-    return votings[voter];
+  function getVoteOf(address voter) external view isWhitelisted returns (VoteStatus) {
+    return votings[voter].status;
   }
 
   function getVoting() external view returns (VotingDetails memory) {
