@@ -9,7 +9,7 @@ contract Governance {
   VotingDetails internal votingDetails;
 
   struct UserWhitelist {
-    uint256 tokenTotalSupply;
+    uint64 tokenTotalSupply;
     bool inWhitelist;
     bool executed;
     VoteStatus status;
@@ -104,7 +104,7 @@ contract Governance {
     require(!votings[msg.sender].executed, "The voter already voted");
     require(votings[msg.sender].status == VoteStatus.None, "The voter not yet voted");
     require(ERC20(tokenAddress).balanceOf(msg.sender) > 0, "Not enought funds");
-    uint256 accountWeight = ERC20(tokenAddress).balanceOf(msg.sender);
+    uint64 accountWeight = ERC20(tokenAddress).balanceOf(msg.sender);
     votings[msg.sender] = UserWhitelist(accountWeight, true, true, status);
 
     if (status == VoteStatus.For) {
