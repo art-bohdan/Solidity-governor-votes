@@ -16,10 +16,10 @@ describe("Token", function () {
   let ctx: TokenContext
 
   beforeEach(async () => {
-    const Token = await ethers.getContractFactory("ERC20")
     const [deployer, user1, user2, user3, ...users] = await ethers.getSigners()
+    const Token = await ethers.getContractFactory("ERC20")
     const token = await Token.deploy("Token-T", "TT", 18, 2000)
-    ctx = { deployer, token, user1, user2, user3, users }
+    ctx = { token, deployer, user1, user2, user3, users }
   })
 
   describe("Deployment", () => {
